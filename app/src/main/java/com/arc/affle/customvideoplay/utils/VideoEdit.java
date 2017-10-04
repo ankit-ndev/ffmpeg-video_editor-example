@@ -15,7 +15,6 @@ import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.arc.affle.customvideoplay.ui.activity.PreviewActivity;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
@@ -44,7 +43,7 @@ public class VideoEdit {
     /**
      * Command for cutting video
      */
-    public static void executeCutVideoCommand(int startMs, int endMs, Context context, Uri videoUri, String filePath) {
+    public static void executeCutVideoCommand(int startMs, int endMs, Context context, String filePath) {
         File moviesDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MOVIES
         );
@@ -53,7 +52,7 @@ public class VideoEdit {
         String fileExtn = ".mp4";
         File dest = new File(moviesDir, filePrefix + fileExtn);
         int fileNo = 0;
-        String yourRealPath = getPath(context, videoUri);
+        String yourRealPath = getPath(context, Uri.parse(filePath));
         while (dest.exists()) {
             fileNo++;
             dest = new File(moviesDir, filePrefix + fileNo + fileExtn);
@@ -74,7 +73,7 @@ public class VideoEdit {
     /**
      * Command for compressing video
      */
-    public static void executeCompressCommand(Context context, Uri videoUri, String quality, String filePath) {
+    public static void executeCompressCommand(Context context, String quality, String filePath) {
 
 
         File moviesDir = Environment.getExternalStoragePublicDirectory(
@@ -83,7 +82,7 @@ public class VideoEdit {
 
         String filePrefix = "compress_video";
         String fileExtn = ".mp4";
-        String yourRealPath = getPath(context, videoUri);
+        String yourRealPath = getPath(context, Uri.parse(filePath));
 
 
         File dest = new File(moviesDir, filePrefix + fileExtn);

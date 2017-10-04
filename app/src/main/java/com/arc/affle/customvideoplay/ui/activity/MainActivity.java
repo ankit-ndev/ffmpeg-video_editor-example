@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String filePath;
     private int duration;
     private Context mContext;
-    private Uri videoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +55,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
 
-        videoUri = Uri.parse(filePath);
         initializeVideoView();
         VideoEdit.loadFFMPEGBinary(mContext, MainActivity.this);
     }
 
     private void initializeVideoView() {
 
-        videoView.setVideoURI(videoUri);
+        videoView.setVideoURI(Uri.parse(filePath));
         videoView.start();
 
 
@@ -145,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     dialog.dismiss();
                                     int position = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
-                                    VideoEdit.executeCompressCommand(mContext, videoUri, String.valueOf(type[position]), filePath);
+                                    VideoEdit.executeCompressCommand(mContext, Uri.parse(filePath), String.valueOf(type[position]), filePath);
 
 
                                 }
@@ -162,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 if (filePath != null) {
                     VideoEdit.executeCutVideoCommand(
-                            rangeSeekBar.getSelectedMinValue().intValue() * 1000, rangeSeekBar.getSelectedMaxValue().intValue() * 1000, mContext, videoUri, filePath);
+                            rangeSeekBar.getSelectedMinValue().intValue() * 1000, rangeSeekBar.getSelectedMaxValue().intValue() * 1000, mContext,
+                            Uri.parse(filePath), filePath);
                 } else
                     Snackbar.make(mainLayout, "Please upload a video", 4000).show();
                 break;
