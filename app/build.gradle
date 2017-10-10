@@ -33,7 +33,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.writingminds:FFmpegAndroid:0.3.2'
     compile 'org.florescu.android.rangeseekbar:rangeseekbar-library:0.3.0'
     compile 'commons-io:commons-io:2.5'
     compile 'com.android.support:appcompat-v7:26.0.0-alpha1'

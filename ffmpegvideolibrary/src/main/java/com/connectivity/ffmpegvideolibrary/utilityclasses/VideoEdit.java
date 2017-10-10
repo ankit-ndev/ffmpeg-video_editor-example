@@ -27,10 +27,10 @@ import java.io.File;
 public class VideoEdit {
 
 
-    public FFmpeg ffmpeg;
-    public String TAG = "CUSTOM VIDEO";
-    public int choice = 0;
-    public ProgressDialog progressDialog;
+    private FFmpeg ffmpeg;
+    private String TAG = "CUSTOM VIDEO";
+    private int choice = 0;
+    private ProgressDialog progressDialog;
     public final String FILEPATH = "filepath";
     private IVideoPathCallback mVideoPathCallback;
 
