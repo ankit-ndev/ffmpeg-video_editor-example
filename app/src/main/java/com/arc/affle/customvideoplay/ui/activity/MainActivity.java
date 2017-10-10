@@ -3,6 +3,7 @@ package com.arc.affle.customvideoplay.ui.activity;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,12 +16,14 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.VideoView;
 import com.arc.affle.customvideoplay.R;
-import com.arc.affle.customvideoplay.utils.VideoEdit;
+import com.connectivity.ffmpegvideolibrary.interfaces.IVideoPathCallback;
+import com.connectivity.ffmpegvideolibrary.utilityclasses.VideoEdit;
+
 import org.florescu.android.rangeseekbar.RangeSeekBar;
 import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, IVideoPathCallback{
 
     private VideoView videoView;
     private RangeSeekBar rangeSeekBar;
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String filePath;
     private int duration;
     private Context mContext;
+    private static final String FILEPATH = "filepath";
+    private VideoEdit videoEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +61,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
 
         initializeVideoView();
-        VideoEdit.loadFFMPEGBinary(mContext, MainActivity.this);
+        videoEdit.loadFFMPEGBinary(mContext, MainActivity.this);
     }
 
     private void initializeVideoView() {
-
+        videoEdit = new VideoEdit(this);
         videoView.setVideoURI(Uri.parse(filePath));
         videoView.start();
 
@@ -143,7 +148,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     dialog.dismiss();
                                     int position = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
-                                    VideoEdit.executeCompressCommand(mContext, String.valueOf(type[position]), filePath);
+
+                                    videoEdit.executeCompressCommand(mContext, String.valueOf(type[position]), filePath);
 
 
                                 }
@@ -159,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.ib_cut:
 
                 if (filePath != null) {
-                    VideoEdit.executeCutVideoCommand(
+                    videoEdit.executeCutVideoCommand(
                             rangeSeekBar.getSelectedMinValue().intValue() * 1000, rangeSeekBar.getSelectedMaxValue().intValue() * 1000, mContext,
                              filePath);
                 } else
@@ -169,4 +175,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @Override
+    public void onVideoEditedSuccessfully(String path) {
+
+        Intent intent = new Intent(mContext, PreviewActivity.class);
+        intent.putExtra(FILEPATH, path);
+        startActivity(intent);
+    }
 }

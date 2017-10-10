@@ -1,21 +1,16 @@
-package com.arc.affle.customvideoplay.utils;
+package com.connectivity.ffmpegvideolibrary.utilityclasses;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
-import com.arc.affle.customvideoplay.ui.activity.PreviewActivity;
+
+import com.connectivity.ffmpegvideolibrary.interfaces.IVideoPathCallback;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
@@ -32,18 +27,21 @@ import java.io.File;
 public class VideoEdit {
 
 
-    public static FFmpeg ffmpeg;
-    public static String TAG = "CUSTOM VIDEO";
-    public static int choice = 0;
-    public static ProgressDialog progressDialog;
-    public static final String FILEPATH = "filepath";
+    public FFmpeg ffmpeg;
+    public String TAG = "CUSTOM VIDEO";
+    public int choice = 0;
+    public ProgressDialog progressDialog;
+    public final String FILEPATH = "filepath";
+    private IVideoPathCallback mVideoPathCallback;
 
-
+    public VideoEdit(IVideoPathCallback videoPathCallback) {
+        mVideoPathCallback = videoPathCallback;
+    }
 
     /**
      * Command for cutting video
      */
-    public static void executeCutVideoCommand(int startMs, int endMs, Context context, String filePath) {
+    public void executeCutVideoCommand(int startMs, int endMs, Context context, String filePath) {
         File moviesDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_MOVIES
         );
@@ -52,7 +50,7 @@ public class VideoEdit {
         String fileExtn = ".mp4";
         File dest = new File(moviesDir, filePrefix + fileExtn);
         int fileNo = 0;
-        String yourRealPath = getPath(context, Uri.parse(filePath));
+        String yourRealPath = Utils.getPath(context, Uri.parse(filePath));
         while (dest.exists()) {
             fileNo++;
             dest = new File(moviesDir, filePrefix + fileNo + fileExtn);
@@ -73,7 +71,7 @@ public class VideoEdit {
     /**
      * Command for compressing video
      */
-    public static void executeCompressCommand(Context context, String quality, String filePath) {
+    public void executeCompressCommand(Context context, String quality, String filePath) {
 
 
         File moviesDir = Environment.getExternalStoragePublicDirectory(
@@ -82,7 +80,7 @@ public class VideoEdit {
 
         String filePrefix = "compress_video";
         String fileExtn = ".mp4";
-        String yourRealPath = getPath(context, Uri.parse(filePath));
+        String yourRealPath = Utils.getPath(context, Uri.parse(filePath));
 
 
         File dest = new File(moviesDir, filePrefix + fileExtn);
@@ -121,7 +119,8 @@ public class VideoEdit {
     /**
      * Load FFMPEG binary
      */
-    public static void loadFFMPEGBinary(final Context context, final Activity activity) {
+    public void loadFFMPEGBinary(final Context context, final Activity activity) {
+
         try {
             if (ffmpeg == null) {
                 Toast.makeText(context, "FFMPEG : was null", Toast.LENGTH_SHORT).show();
@@ -151,7 +150,7 @@ public class VideoEdit {
     /**
      * unsupported exception dialog
      */
-    public static void showUnsupportedExceptionDialog(final Context context, final Activity activity) {
+    public void showUnsupportedExceptionDialog(final Context context, final Activity activity) {
         new AlertDialog.Builder(context)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Not Supported")
@@ -172,7 +171,7 @@ public class VideoEdit {
     /**
      * Executing ffmpeg binary
      */
-    public static void execFFmpegBinary(final String[] command, final Context context,final String filePath) {
+    public void execFFmpegBinary(final String[] command, final Context context, final String filePath) {
 
 
         progressDialog = new ProgressDialog(context);
@@ -190,9 +189,7 @@ public class VideoEdit {
                 public void onSuccess(String s) {
                     Log.d(TAG, "SUCCESS with output : " + s);
 
-                        Intent intent = new Intent(context, PreviewActivity.class);
-                        intent.putExtra(FILEPATH, filePath);
-                        context.startActivity(intent);
+                    mVideoPathCallback.onVideoEditedSuccessfully(filePath);
                 }
 
                 @Override
@@ -224,122 +221,4 @@ public class VideoEdit {
         }
     }
 
-
-
-    /**
-     * Get a file path from a Uri. This will get the the path for Storage Access
-     * Framework Documents, as well as the _data field for the MediaStore and
-     * other file-based ContentProviders.
-     */
-    public static String getPath(final Context context, final Uri uri) {
-
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-        // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
-                }
-
-            }
-            // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
-
-                final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                return getDataColumn(context, contentUri, null, null);
-            }
-            // MediaProvider
-            else if (isMediaDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-
-                final String selection = "_id=?";
-                final String[] selectionArgs = new String[]{
-                        split[1]
-                };
-
-                return getDataColumn(context, contentUri, selection, selectionArgs);
-            }
-        }
-        // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            return getDataColumn(context, uri, null, null);
-        }
-        // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the value of the data column for this Uri.
-     */
-    public static String getDataColumn(Context context, Uri uri, String selection,
-                                 String[] selectionArgs) {
-
-        Cursor cursor = null;
-        final String column = "_data";
-        final String[] projection = {
-                column
-        };
-
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
-                    null);
-            if (cursor != null && cursor.moveToFirst()) {
-                final int column_index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(column_index);
-            }
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
-        return null;
-    }
-
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is ExternalStorageProvider.
-     */
-    public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is DownloadsProvider.
-     */
-    public static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is MediaProvider.
-     */
-    public static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
 }

@@ -1,4 +1,4 @@
-package com.arc.affle.customvideoplay.utils;
+package com.connectivity.ffmpegvideolibrary.utilityclasses;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -14,13 +14,13 @@ import android.provider.MediaStore;
  * Dated: 04/09/17.
  */
 
-public class Utils {
+public  class Utils {
     /**
      * Get a file path from a Uri. This will get the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.
      */
-    public String getPath(final Context context, final Uri uri) {
+    public static  String getPath(final Context context, final Uri uri) {
 
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
@@ -84,7 +84,7 @@ public class Utils {
     /**
      * Get the value of the data column for this Uri.
      */
-    private String getDataColumn(Context context, Uri uri, String selection,
+    private static String getDataColumn(Context context, Uri uri, String selection,
                                  String[] selectionArgs) {
 
         Cursor cursor = null;
@@ -112,7 +112,7 @@ public class Utils {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is ExternalStorageProvider.
      */
-    private boolean isExternalStorageDocument(Uri uri) {
+    private static boolean isExternalStorageDocument(Uri uri) {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
     }
 
@@ -120,7 +120,7 @@ public class Utils {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is DownloadsProvider.
      */
-    private boolean isDownloadsDocument(Uri uri) {
+    private static boolean isDownloadsDocument(Uri uri) {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
@@ -128,7 +128,7 @@ public class Utils {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is MediaProvider.
      */
-    private boolean isMediaDocument(Uri uri) {
+    private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
